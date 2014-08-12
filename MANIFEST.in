@@ -1,2 +1,2 @@
-recursive-include react *.py
-recursive-include react *.js
+recursive-include *.py
+recursive-include *.js

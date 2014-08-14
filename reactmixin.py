@@ -17,12 +17,12 @@ class ReactMixin(object):
         if 'static_path' not in self.settings:
             raise AttributeError("Please define 'static_path' in application settings.")
         self.ui_modules['JSX'] = JSXModule
-        self._bundle_file = os.path.join(self.settings['static_path'], self.settings.get('bundle_file', 'bundle.js'))
-        with open(self._bundle_file) as file:
+        bundle_file = os.path.join(self.settings['static_path'], self.settings.get('bundle_file', 'bundle.js'))
+        self._make_bundle(bundle_file)
+        with open(bundle_file) as file:
             script = file.read()
         with open(os.path.join(os.path.dirname(__file__), 'render.js')) as file:
             self._ctx = execjs.compile(script+file.read());
-        self._make_bundle()
 
     @classmethod
     def _register(cls, filename, name):
@@ -32,17 +32,17 @@ class ReactMixin(object):
                     " but will be overwrited for '%s'.", name, cls._components[name], filename)
         cls._components[name] = filename
 
-    def _make_bundle(self):
+    def _make_bundle(self, bundle_file):
         with open(os.path.join(os.path.dirname(__file__), 'build.js')) as file:
             build_script = file.read()
         file_list = list(self._components.items())
         debug = self.settings.get('debug', False)
         ctx = execjs.compile(build_script)
         try:
-            ctx.call('make_bundle', self._bundle_file, self._requires, file_list, debug)
+            ctx.call('make_bundle', bundle_file, self._requires, file_list, debug)
         except execjs.RuntimeError as exc:
             raise RuntimeError('execjs.RuntimeError: {0}'.format(exc.args[0].decode('utf8')))
-        logging.info("Rebuilded: '{0}'.".format(self._bundle_file)) 
+        logging.info("Rebuilded: '{0}'.".format(bundle_file)) 
 
 
 class JSXModule(tornado.web.UIModule):

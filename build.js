@@ -7,6 +7,8 @@ function make_bundle(bundle_file, requires, files, debug)
 {
 	var b = browserify({debug: debug, global: true})
 	b.transform({global: true}, reactify);
+    if (!debug)
+        b.transform({global: true}, uglifyify);
 	requires.forEach(function(element, index, array) {
         b.require(element);
     });

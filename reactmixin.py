@@ -1,3 +1,4 @@
+import sys
 import json
 import uuid
 import execjs
@@ -68,8 +69,19 @@ class JSXModule(tornado.web.UIModule):
         return json.dumps(props)
 
 
-def component(filename, name=None):
+def register(component, name=None):
     """ Defines JSX component and prepares it to using."""
-    if os.path.exists(filename):
-        ReactMixin._register(os.path.abspath(filename), 
-            name or os.path.splitext(os.path.basename(filename))[0])
+    if isinstance(component, str) and os.path.exists(component):
+        ReactMixin._register(os.path.abspath(component), 
+            name or os.path.splitext(os.path.basename(component))[0])
+        return
+    elif isinstance(component, type) and hasattr(component, '__file__'):
+        if component.__module__ in sys.modules:
+            filename = os.path.join(os.path.dirname(sys.modules[component.__module__].__file__), component.__file__)
+            name = component.__module__ + '.' + component.__name__
+            register(filename, name)
+            if hasattr(component, '__dependency__'):
+                for dependency in component.__dependency__:
+                    register(dependency)
+        return
+    raise ValueError("Component: {0} is not found.".format(component))

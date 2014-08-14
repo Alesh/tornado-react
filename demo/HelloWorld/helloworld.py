@@ -3,7 +3,7 @@ import tornado.web
 import reactmixin
 
 root_path = os.path.dirname(__file__)
-reactmixin.component(os.path.join(root_path, 'helloworld.jsx'), 'HelloWorld')
+reactmixin.register(os.path.join(root_path, 'helloworld.jsx'), 'HelloWorld')
 
 class MainHandler(tornado.web.RequestHandler):
 
